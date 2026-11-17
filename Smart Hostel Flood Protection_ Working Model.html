@@ -1,0 +1,97 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Smart Hostel Flood Protection System: Working Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Space+Grotesk:wght@500..700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAF3FA;--card:#fff;--ink:#10243E;--mut:#4A6280;--acc:#0891B2;--am:#B45309;--ok:#15803D;--bad:#B91C1C;--line:#C5DAEA;--btn:#0B1F3A;--btnt:#EAF3FA;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1A31;--card:#12315A;--ink:#EAF3FA;--mut:#9DB6D1;--acc:#22D3EE;--am:#F59E0B;--ok:#4ADE80;--bad:#F87171;--line:#244A78;--btn:#22D3EE;--btnt:#0A1A31;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1A31;--card:#12315A;--ink:#EAF3FA;--mut:#9DB6D1;--acc:#22D3EE;--am:#F59E0B;--ok:#4ADE80;--bad:#F87171;--line:#244A78;--btn:#22D3EE;--btnt:#0A1A31;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+.wrap{max-width:1280px;margin:auto;padding:18px}
+h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(22px,3.4vw,36px);margin:0}
+.tag{color:var(--am);font-weight:600;margin:4px 0 14px}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(290px,1fr);gap:16px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+canvas{width:100%;height:auto;display:block;border-radius:16px;background:#0B1F3A}
+.card{background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--line)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+button{font:600 14px Inter,sans-serif;background:var(--btn);color:var(--btnt);border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+button.s{background:transparent;color:var(--ink);border:1px solid var(--line)}
+label{font-size:14px;color:var(--mut);display:flex;gap:6px;align-items:center}
+input[type=range]{accent-color:var(--acc);width:150px}
+h2{font:600 16px 'Space Grotesk',sans-serif;margin:0 0 10px}
+.gauge{height:22px;border-radius:11px;background:var(--line);overflow:hidden;position:relative}
+.fill{height:100%;width:0;transition:background .3s;background:var(--ok)}.fill.warn{background:var(--am)}.fill.bad{background:var(--bad)}
+.gauge i{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5}
+.lvl{font:700 26px 'Space Grotesk',sans-serif;margin:8px 0 10px}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.v{font-weight:600}.ok{color:var(--ok)}.warn{color:var(--am)}.bad{color:var(--bad)}.off{color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.chip{font-size:12px;font-weight:600;padding:6px 10px;border-radius:20px;border:1px solid var(--line);color:var(--mut);transition:.3s}
+.chip.on{background:var(--acc);color:var(--btnt);border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 30%,transparent)}
+ul{list-style:none;margin:0;padding:0;max-height:130px;overflow:auto;font-size:13px}li{padding:4px 0;border-bottom:1px solid var(--line)}
+.note{font-size:13px;color:var(--mut);margin-top:12px;line-height:1.5}
+</style></head><body><div class="wrap">
+<h1>Smart Hostel Flood Protection System: Working Model</h1><p class="tag">Detect Early. Act Smart. Stay Safe.</p>
+<div class="grid"><div><canvas id="c" aria-label="Animated hostel with rain, water level sensor, buzzer and pump"></canvas>
+<div class="card" style="margin-top:12px"><div class="ctl"><button data-r="3">Light rain</button><button data-r="6">Heavy rain</button><button data-r="10">Storm</button><button class="s" data-r="0">Stop rain</button><button class="s" id="rs">Reset</button></div>
+<div class="ctl"><label>Rainfall <input id="r" type="range" min="0" max="10" step="0.5" value="0"></label><label><input id="sy" type="checkbox" checked> Flood protection system ON</label><label><input id="bk" type="checkbox"> Backup pump</label></div>
+<p class="note">Try this: run a Storm with the system OFF, then Reset and repeat with it ON. In the Storm, one pump cannot keep up, so turn on the backup pump. This is why drainage design matters too.</p></div></div>
+<div class="card"><h2>Live water level</h2><div class="gauge"><div class="fill" id="gv"></div><i style="left:35%"></i><i style="left:60%"></i></div><div class="lvl" id="lv">0%</div>
+<div class="chips"><span class="chip" id="c1">Sensor</span><span class="chip" id="c2">Arduino</span><span class="chip" id="c3">Buzzer</span><span class="chip" id="c4">Relay</span><span class="chip" id="c5">Pump</span></div>
+<div class="row"><span>Water sensor</span><span class="v" id="sSen"></span></div><div class="row"><span>Controller</span><span class="v" id="sArd"></span></div><div class="row"><span>Buzzer</span><span class="v" id="sBuz"></span></div><div class="row"><span>LED indicator</span><span class="v" id="sLed"></span></div><div class="row"><span>Relay and pump</span><span class="v" id="sPmp"></span></div><div class="row"><span>Alert to maintenance</span><span class="v" id="sAlt"></span></div><div class="row"><span>Hostel entrance</span><span class="v" id="sHos"></span></div>
+<h2 style="margin-top:14px">Event log</h2><ul id="lg"></ul>
+<p class="note">Educational simulation. Real flood protection also needs proper drainage, waterproofing and suitable ground levels.</p></div></div></div>
+<script>
+const $=id=>document.getElementById(id),cv=$('c'),x=cv.getContext('2d');cv.width=1920;cv.height=1080;x.scale(2,2);
+const W=960,H=540,G=400,K=1.2,P0={L:0,rain:0,sys:true,backup:false,pump:false,alarm:false,indoor:0,t:0,entered:false,fan:0,dash:0};
+let S=Object.assign({},P0),last=0;const drops=[];for(let i=0;i<320;i++)drops.push({x:Math.random()*W,y:Math.random()*H,v:500+Math.random()*300});
+const clouds=[{x:100,y:60,s:1},{x:430,y:42,s:1.3},{x:780,y:70,s:1.1}];
+function log(m,c){const l=document.createElement('li');l.className=c||'';l.textContent='t+'+S.t.toFixed(0)+'s  '+m;$('lg').prepend(l)}
+function set(id,t,c){const e=$(id);e.textContent=t;e.className='v '+c}
+function up(dt){S.t+=dt;S.L+=S.rain*0.9*dt-(S.L>0?0.5*dt:0);
+if(S.sys){if(!S.pump&&S.L>=35){S.pump=S.alarm=true;log('35% reached: buzzer ON, alert sent, pump started','warn')}
+if(S.pump&&S.L<=8){S.pump=S.alarm=false;log('Level safe: pump stopped, monitoring continues','ok')}}else{S.pump=S.alarm=false}
+if(S.pump)S.L-=(6+(S.backup?4:0))*dt;S.L=Math.min(100,Math.max(0,S.L));
+const tg=Math.max(0,(S.L-60)/40);S.indoor+=(tg-S.indoor)*Math.min(1,dt*(tg>S.indoor?1.5:.15));
+if(S.L>60&&!S.entered){S.entered=true;log('Water reached the entrance and is entering the hostel!','bad')}if(S.L<50)S.entered=false;
+S.fan+=S.pump?14*dt:0;S.dash+=S.pump?120*dt:0}
+function ln(lv,col,t){const y=G-lv*K;x.strokeStyle=col;x.setLineDash([6,5]);x.lineWidth=1.2;x.beginPath();x.moveTo(150,y);x.lineTo(700,y);x.stroke();x.setLineDash([]);x.fillStyle=col;x.font='600 11px Inter,sans-serif';x.textAlign='left';x.fillText(t,12,y+4)}
+function tx(t,a,b,f,c){x.fillStyle=c;x.font=f;x.textAlign='center';x.fillText(t,a,b)}
+function draw(dt){let g=x.createLinearGradient(0,0,0,G);g.addColorStop(0,'#0A1730');g.addColorStop(1,'#24476F');x.fillStyle=g;x.fillRect(0,0,W,H);
+const cc=Math.round(110-S.rain*7);clouds.forEach(c=>{c.x=(c.x+200+10*dt)%(W+400)-200;x.fillStyle='rgb('+cc+','+(cc+12)+','+(cc+30)+')';[[0,0,34],[34,6,28],[-34,8,26],[8,-14,26]].forEach(p=>{x.beginPath();x.arc(c.x+p[0]*c.s,c.y+p[1]*c.s,p[2]*c.s,0,7);x.fill()})});
+x.fillStyle='#31465F';x.fillRect(290,135,400,18);tx('STUDENT HOSTEL',490,148,'700 12px Inter,sans-serif','#fff');x.fillStyle='#C9D6E3';x.fillRect(300,153,380,247);
+[325,395,555,625].forEach(a=>[180,245].forEach(b=>{x.fillStyle='#FDE68A';x.fillRect(a,b,50,42);x.fillStyle='#C9D6E3';x.fillRect(a+24,b,2,42)}));
+x.fillStyle='#1E2E44';x.fillRect(320,305,130,95);x.fillStyle='#7C8DA6';x.fillRect(330,372,62,16);x.fillStyle='#F59E0B';x.fillRect(410,380,22,20);
+x.fillStyle='rgba(34,165,225,.85)';x.fillRect(320,G-S.indoor*60,130,S.indoor*60);
+x.fillStyle='#5B4636';x.fillRect(470,310,60,90);x.fillStyle='#FBBF24';x.fillRect(518,358,5,5);
+x.fillStyle='#1A2B3C';x.fillRect(0,G,W,H-G);x.fillStyle='#2E7D5B';x.fillRect(0,G,W,5);
+x.lineCap='butt';x.strokeStyle='#4B5F78';x.lineWidth=16;x.beginPath();x.moveTo(880,G);x.lineTo(880,470);x.lineTo(945,470);x.stroke();x.strokeStyle='#0B1F3A';x.lineWidth=8;x.stroke();
+if(S.pump){x.strokeStyle='#22D3EE';x.lineWidth=5;x.setLineDash([14,12]);x.lineDashOffset=-S.dash;x.stroke();x.setLineDash([]);x.lineDashOffset=0;x.fillStyle='#7DD3FC';for(let i=0;i<4;i++){x.beginPath();x.arc(946,470+((S.t*140+i*18)%60),3,0,7);x.fill()}}
+tx('To drainage channel',850,505,'600 11px Inter,sans-serif','#9DB6D1');
+x.fillStyle='#94A3B8';x.fillRect(702,G-125,6,125);const sh=Math.min(125,S.L*K);x.fillStyle='#22D3EE';x.fillRect(699,G-sh,12,sh);tx('Water-level sensor',705,G-134,'600 11px Inter,sans-serif','#E2E8F0');
+x.fillStyle='#64748B';x.fillRect(768,300,6,100);x.fillStyle='#00979D';x.beginPath();x.roundRect(738,238,68,62,8);x.fill();tx('CONTROL',772,254,'700 9px Inter,sans-serif','#fff');
+[['#4ADE80',S.L<35],['#FBBF24',S.L>=35&&S.L<60],['#F87171',S.L>=60]].forEach((l,i)=>{x.fillStyle=l[1]?l[0]:'#1F3A3C';x.beginPath();x.arc(752+i*19,282,6,0,7);x.fill()});
+x.fillStyle='#374151';x.beginPath();x.arc(772,214,10,0,7);x.fill();if(S.alarm)for(let i=0;i<3;i++){const r=14+((S.t*22+i*9)%27);x.strokeStyle='rgba(248,113,113,'+(1-(r-14)/27)+')';x.lineWidth=2;x.beginPath();x.arc(772,214,r,0,7);x.stroke()}
+tx('Buzzer',772,192,'600 11px Inter,sans-serif','#E2E8F0');
+x.setLineDash([4,4]);x.strokeStyle=S.alarm?'#FBBF24':'#64748B';x.lineWidth=2;x.beginPath();x.moveTo(705,G-125);x.lineTo(738,266);x.moveTo(806,270);x.lineTo(880,350);x.stroke();x.setLineDash([]);
+x.fillStyle='#1D4ED8';x.fillRect(850,350,60,50);x.fillStyle='#0B1F3A';x.beginPath();x.arc(880,375,17,0,7);x.fill();x.strokeStyle=S.pump?'#22D3EE':'#64748B';x.lineWidth=3;for(let i=0;i<3;i++){const a=S.fan+i*2.094;x.beginPath();x.moveTo(880,375);x.lineTo(880+14*Math.cos(a),375+14*Math.sin(a));x.stroke()}tx(S.backup?'Pump + backup':'Pump',880,342,'600 11px Inter,sans-serif','#E2E8F0');
+ln(35,'#22D3EE','Alert level 35%');ln(60,'#F59E0B','Entrance level');
+const n=Math.floor(S.rain*32),sf=G-S.L*K;x.strokeStyle='rgba(190,220,255,.65)';x.lineWidth=1.3;x.beginPath();for(let i=0;i<n;i++){const d=drops[i];d.y+=d.v*dt;d.x-=50*dt;if(d.y>sf||d.x<-20){d.y=Math.random()*-120;d.x=Math.random()*(W+120)}x.moveTo(d.x,d.y);x.lineTo(d.x+3,d.y-14)}x.stroke();
+const h=S.L*K;if(h>.4){const am=2+S.rain*.4;x.beginPath();x.moveTo(0,G);for(let i=0;i<=W;i+=8)x.lineTo(i,G-h+Math.sin(i*.03+S.t*2)*am);x.lineTo(W,G);x.closePath();x.fillStyle='rgba(34,165,225,.72)';x.fill()}
+tx('Rainfall '+S.rain.toFixed(1)+' / 10',90,24,'600 14px Inter,sans-serif','#E2E8F0');
+if(S.alarm){x.fillStyle='rgba(220,38,38,'+(.75+.25*Math.sin(S.t*8))+')';x.fillRect(0,0,W,34);tx('FLOOD ALERT: BUZZER ON, MAINTENANCE TEAM NOTIFIED, PUMP RUNNING',W/2,23,'700 15px Inter,sans-serif','#fff')}
+else if(!S.sys&&S.L>=35){x.fillStyle='rgba(71,85,105,.9)';x.fillRect(0,0,W,34);tx('System OFF: no detection, no pump',W/2,23,'700 15px Inter,sans-serif','#fff')}
+if(S.indoor>.02)tx('WATER ENTERING HOSTEL',490,300,'700 16px Inter,sans-serif','#FCA5A5')}
+function ui(){const L=S.L,st=L>=60?['DANGER','bad']:L>=35?['WARNING','warn']:['SAFE','ok'];$('gv').style.width=L+'%';$('gv').className='fill '+(st[1]=='ok'?'':st[1]);$('lv').textContent=L.toFixed(0)+'% · '+st[0];$('lv').className='lvl '+st[1];
+set('sSen',L>=1?'Wet at '+L.toFixed(0)+'%':'Dry',L>=35?'warn':'off');set('sArd',S.sys?(S.alarm?'ALERT: relay triggered':'Monitoring'):'OFF',S.sys?(S.alarm?'warn':'ok'):'off');
+set('sBuz',S.alarm?'ON':'OFF',S.alarm?'bad':'off');set('sLed',L>=60?'Red':L>=35?'Amber':'Green',st[1]);set('sPmp',S.pump?'Running':'Stopped',S.pump?'ok':'off');
+set('sAlt',S.alarm?'Sent':'None',S.alarm?'warn':'off');set('sHos',S.indoor>.02?'Water entering!':'Protected',S.indoor>.02?'bad':'ok');
+const o={c1:L>=35,c2:S.sys,c3:S.alarm,c4:S.pump,c5:S.pump};for(const k in o)$(k).classList.toggle('on',o[k])}
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;up(dt);draw(dt);ui();requestAnimationFrame(loop)}
+$('r').oninput=e=>S.rain=+e.target.value;
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.rain=+b.dataset.r;$('r').value=S.rain;log(S.rain?'Rainfall set to '+S.rain:'Rain stopped')});
+$('rs').onclick=()=>{S=Object.assign({},P0,{sys:$('sy').checked,backup:$('bk').checked});$('r').value=0;$('lg').innerHTML='';log('Model reset')};
+$('sy').onchange=e=>{S.sys=e.target.checked;log(S.sys?'Flood protection system switched ON':'Flood protection system switched OFF',S.sys?'ok':'bad')};
+$('bk').onchange=e=>{S.backup=e.target.checked;log(S.backup?'Backup pump added':'Backup pump removed')};
+log('Ready. Choose a rainfall level to begin.');requestAnimationFrame(loop);
+</script></body></html>
